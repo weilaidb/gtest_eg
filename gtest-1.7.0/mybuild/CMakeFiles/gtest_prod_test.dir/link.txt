@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/gtest_prod_test.dir/test/gtest_prod_test.cc.o CMakeFiles/gtest_prod_test.dir/test/production.cc.o  -o gtest_prod_test  -L/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src -rdynamic libgtest_main.a libgtest.a -lpthread -Wl,-rpath,/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src 

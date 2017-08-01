@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/gtest-listener_test.dir/test/gtest-listener_test.cc.o  -o gtest-listener_test  -L/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src -rdynamic libgtest_main.a libgtest.a -lpthread -Wl,-rpath,/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src 

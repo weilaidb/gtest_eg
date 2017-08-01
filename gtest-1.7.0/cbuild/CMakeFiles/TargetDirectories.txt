@@ -1,0 +1,2 @@
+/home/weilaidb/git/gtest_eg/gtest-1.7.0/cbuild/CMakeFiles/gtest.dir
+/home/weilaidb/git/gtest_eg/gtest-1.7.0/cbuild/CMakeFiles/gtest_main.dir

@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/gtest_no_test_unittest.dir/test/gtest_no_test_unittest.cc.o  -o gtest_no_test_unittest  -L/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src -rdynamic libgtest.a -lpthread -Wl,-rpath,/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src 

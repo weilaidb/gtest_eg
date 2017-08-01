@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/gtest_xml_output_unittest_.dir/test/gtest_xml_output_unittest_.cc.o  -o gtest_xml_output_unittest_  -L/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src -rdynamic libgtest.a -lpthread -Wl,-rpath,/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src 

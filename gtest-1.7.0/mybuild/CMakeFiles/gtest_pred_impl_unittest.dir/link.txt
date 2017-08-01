@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/gtest_pred_impl_unittest.dir/test/gtest_pred_impl_unittest.cc.o  -o gtest_pred_impl_unittest  -L/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src -rdynamic libgtest_main.a libgtest.a -lpthread -Wl,-rpath,/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src 

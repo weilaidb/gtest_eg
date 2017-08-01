@@ -1,0 +1,4 @@
+GTEST_DIR=/home/weilaidb/git/gtest_eg/gtest-1.7.0
+mkdir mybuild
+cd mybuild
+cmake -Dgtest_build_tests=ON ${GTEST_DIR}

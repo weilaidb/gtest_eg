@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/gtest_env_var_test_.dir/test/gtest_env_var_test_.cc.o  -o gtest_env_var_test_  -L/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src -rdynamic libgtest.a -lpthread -Wl,-rpath,/home/weilaidb/git/gtest_eg/gtest-1.7.0/mybuild/src 
