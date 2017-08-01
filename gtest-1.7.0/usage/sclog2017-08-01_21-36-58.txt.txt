@@ -1,0 +1,8 @@
+gtest-1.70 make
+cat > buildoorder<<EOF
+GTEST_DIR=`pwd`
+mkdir mybuild
+cd mybuild
+cmake -Dgtest_build_tests=ON \${GTEST_DIR}
+EOF
+

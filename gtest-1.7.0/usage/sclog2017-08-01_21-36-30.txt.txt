@@ -1,0 +1,542 @@
+CoderZh的技术博客
+一个程序员的思考与总结(请移步至：http://blog.coderzh.com/)
+博客园
+首页
+联系
+订阅
+管理
+随笔-234  文章-10  评论-2044 
+玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest
+
+一、前言
+
+本篇将介绍一些gtest的基本使用，包括下载，安装，编译，建立我们第一个测试Demo工程，以及编写一个最简单的测试案例。 
+二、下载
+
+如果不记得网址， 直接在google里搜gtest，第一个就是。目前gtest的最新版本为1.3.0，从下列地址可以下载到该最新版本：
+http://googletest.googlecode.com/files/gtest-1.3.0.zip 
+
+http://googletest.googlecode.com/files/gtest-1.3.0.tar.gz 
+
+http://googletest.googlecode.com/files/gtest-1.3.0.tar.bz2 
+
+三、编译
+
+下载解压后， 里面有个msvc目录：
+ 
+
+使用VS的同学可以直接打开msvc里面的工程文件， 如果你在使用的是VS2005或是VS2008，打开后会提示你升级，升完级后，我们直接编译里面的“gtest”工程，可以直接编过的。
+这里要提醒一下的是，如果你升级为VS2008的工程，那么你的测试Demo最好也是VS2008工程，不然你会发现很郁闷，你的Demo怎么也编不过，我也曾折腾了好久，当时我升级为了VS2008工程，结果我使用VS2005工程建Demo，死活编不过。(这里有人误解了，并不是说只能在VS2008中编译，在VS2005中同样可以。如果要编译VS2005版本，最好保证gtest和你的测试工程都使用VS2005工程。)
+
+编译之后，在msvc里面的Debug或是Release目录里看到编译出来的gtestd.lib或是gtest.lib文件。
+四、第一个Demo
+
+下面我们开始建立我们的第一个Demo了，假如之前使用的VS2008编译的gtest，那么，我们在VS2008中，新建一个Win32 Console Application。接着就是设置工程属性，总结如下：
+
+1.设置gtest头文件路径
+
+
+
+2.设置gtest.lib路径
+
+
+
+3.Runtime Library设置
+
+ 
+
+如果是Release版本，Runtime Library设为/MT。当然，其实你也可以选择动态链接（/MD），前提是你之前编译的gtest也使用了同样是/MD选项。
+工程设置后了后，我们来编写一个最简单测试案例试试，我们先来写一个被测试函数：
+
+复制代码
+int Foo(int a, int b)
+{
+    if (a == 0 || b == 0)
+    {
+        throw "don't do that";
+    }
+    int c = a % b;
+    if (c == 0)
+        return b;
+    return Foo(b, c);
+}
+复制代码
+没错，上面的函数是用来求最大公约数的。下面我们就来编写一个简单的测试案例。
+
+复制代码
+#include <gtest/gtest.h>
+
+TEST(FooTest, HandleNoneZeroInput)
+{
+    EXPECT_EQ(2, Foo(4, 10));
+    EXPECT_EQ(6, Foo(30, 18));
+}
+复制代码
+上面可以看到，编写一个测试案例是多么的简单。 我们使用了TEST这个宏，它有两个参数，官方的对这两个参数的解释为：[TestCaseName，TestName]，而我对这两个参数的定义是：[TestSuiteName，TestCaseName]，在下一篇我们再来看为什么这样定义。
+对检查点的检查，我们上面使用到了EXPECT_EQ这个宏，这个宏用来比较两个数字是否相等。Google还包装了一系列EXPECT_* 和ASSERT_*的宏，而EXPECT系列和ASSERT系列的区别是：
+
+    1. EXPECT_*  失败时，案例继续往下执行。
+
+    2. ASSERT_* 失败时，直接在当前函数中返回，当前函数中ASSERT_*后面的语句将不会执行。 
+在下一篇，我们再来具体讨论这些断言宏。为了让我们的案例运行起来，我们还需要在main函数中添加如下代码：
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+“testing::InitGoogleTest(&argc, argv);” ：gtest的测试案例允许接收一系列的命令行参数，因此，我们将命令行参数传递给gtest，进行一些初始化操作。gtest的命令行参数非常丰富，在后面我们也会详细了解到。
+“RUN_ALL_TESTS()” ：运行所有测试案例
+
+OK，一切就绪了，我们直接运行案例试试（一片绿色，非常爽）：
+
+ 
+五、总结
+
+本篇内容确实是非常的初级，目的是让从来没有接触过gtest的同学了解gtest最基本的使用。gtest还有很多更高级的使用方法，我们将会在后面讨论。总结本篇的内容的话：
+
+    1. 使用VS编译gtest.lib文件
+
+    2. 设置测试工程的属性（头文件，lib文件，/MT参数（和编译gtest时使用一样的参数就行了））
+
+    3. 使用TEST宏开始一个测试案例，使用EXPECT_*,ASSER_*系列设置检查点。
+
+    4. 在Main函数中初始化环境，再使用RUN_ALL_TEST()宏运行测试案例。
+优点：
+
+    1. 我们的测试案例本身就是一个exe工程，编译之后可以直接运行，非常的方便。
+
+    2. 编写测试案例变的非常简单（使用一些简单的宏如TEST），让我们将更多精力花在案例的设计和编写上。
+
+    3. 提供了强大丰富的断言的宏，用于对各种不同检查点的检查。
+
+    4. 提高了丰富的命令行参数对案例运行进行一系列的设置。
+
+系列链接：
+
+1.玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest
+2.玩转Google开源C++单元测试框架Google Test系列(gtest)之二 - 断言
+3.玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制
+
+4.玩转Google开源C++单元测试框架Google Test系列(gtest)之四 - 参数化
+
+5.玩转Google开源C++单元测试框架Google Test系列(gtest)之五 - 死亡测试 
+6.玩转Google开源C++单元测试框架Google Test系列(gtest)之六 - 运行参数
+
+7.玩转Google开源C++单元测试框架Google Test系列(gtest)之七 - 深入解析gtest
+8.玩转Google开源C++单元测试框架Google Test系列(gtest)之八 - 打造自己的单元测试框架
+ 
+
+
+DigitalOcean的VPS主机，稳定、速度快、价格也实惠。可以在上面部署独立网站或各种实用工具。
+我用了很久了，确实不错，极力推荐。
+使用这个链接购买可获得10美元优惠。
+
+优惠链接： DigitalOcean优惠码 
+
+
+微信扫一扫交流
+作者：CoderZh 
+公众号：hacker-thinking （一个程序员的思考） 
+独立博客：http://blog.coderzh.com 
+博客园博客将不再更新，请关注我的「微信公众号」或「独立博客」。 
+作为一个程序员，思考程序的每一行代码，思考生活的每一个细节，思考人生的每一种可能。 
+文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。
+分类: C/C++,软件测试,单元测试
+标签: Google Test
+好文要顶 关注我 收藏该文    
+CoderZh
+关注 - 10
+粉丝 - 777
++加关注
+9 0
+? 上一篇：玩转Google开源C++单元测试框架Google Test系列(gtest)(总)
+? 下一篇：玩转Google开源C++单元测试框架Google Test系列(gtest)之二 - 断言
+posted @ 2009-04-06 18:16 CoderZh 阅读(143958) 评论(28) 编辑 收藏
+评论列表
+   #1楼 2009-07-12 18:36 Ren J J
+请问楼主如何在VC6.0下 编译GTEST呢 ？
+   #2楼[楼主] 2009-07-12 21:07 CoderZh  
+@ Ren J J
+GTEST不对VC6进行支持。详细可以看下面这个Issuue：
+http://code.google.com/p/googletest/issues/detail?id=119&can=1&q=vc6
+里面有 zhanyong.wan的回复：
+Unfortunately VC 6 is a very old compiler and has many bugs. It lacks support for
+many standard C++ features. Therefore currently we don't have plan to support it. 
+You are welcome to port google test to VC 6 yourself if you are interested.
+支持(0)反对(0)
+   #3楼 2009-10-11 10:38 lizzoe
+您好，请问我的gtest_demo怎么失败呢？我是按照您的说明，一步步建立工程并设置属性的，链接错误提示如下：
+------ 已启动生成: 项目: gtest_demo, 配置: Debug Win32 ------
+
+正在编译...
+gtest_demo.cpp
+正在链接...
+libcpmtd.lib(xmutex.obj) : error LNK2005: "public: void __thiscall std::_Mutex::_Lock(void)" (?_Lock@_Mutex@std@@QAEXXZ) 已经在 gtestd.lib(gtest.obj) 中定义
+libcpmtd.lib(xmutex.obj) : error LNK2005: "public: void __thiscall std::_Mutex::_Unlock(void)" (?_Unlock@_Mutex@std@@QAEXXZ) 已经在 gtestd.lib(gtest.obj) 中定义
+libcpmtd.lib(xlock.obj) : error LNK2005: "public: __thiscall std::_Lockit::_Lockit(int)" (??0_Lockit@std@@QAE@H@Z) 已经在 gtestd.lib(gtest.obj) 中定义
+libcpmtd.lib(xlock.obj) : error LNK2005: "public: __thiscall std::_Lockit::~_Lockit(void)" (??1_Lockit@std@@QAE@XZ) 已经在 gtestd.lib(gtest.obj) 中定义
+LIBCD.lib(crt0dat.obj) : error LNK2005: __cinit 已经在 LIBCMTD.lib(crt0dat.obj) 中定义
+   #4楼[楼主] 2009-10-18 13:47 CoderZh  
+@ lizzoe
+运行时库没有设置对。最好引用的库全部保持一致，比如全部用/MT或/MD版本。
+支持(0)反对(0)
+   #5楼 2010-06-12 23:31 天天快乐哈  
+如果你用的是.net 2003 ，需要选择单线程方式，不能选择多线程方式，否则会出现libcpmtd.lib(xmutex.obj) : error LNK2005: "public: void __thiscall std::_Mutex::_Lock(void)" (?_Lock@_Mutex@std@@QAEXXZ) 已经在 gtestd.lib(gtest.obj) 中定义
+libcpmtd.lib(xmutex.obj) : error LNK2005: "public: void __thiscall std::_Mutex::_Unlock(void)" (?_Unlock@_Mutex@std@@QAEXXZ) 已经在 gtestd.lib(gtest.obj) 中定义
+libcpmtd.lib(xlock.obj) : error LNK2005: "public: __thiscall std::_Lockit::_Lockit(int)" (??0_Lockit@std@@QAE@H@Z) 已经在 gtestd.lib(gtest.obj) 中定义
+libcpmtd.lib(xlock.obj) : error LNK2005: "public: __thiscall std::_Lockit::~_Lockit(void)" (??1_Lockit@std@@QAE@XZ) 已经在 gtestd.lib(gtest.obj) 中定义
+LIBCD.lib(crt0dat.obj) : error LNK2005: __cinit 已经在 LIBCMTD.lib(crt0dat.obj) 中定义
+的错误。
+支持(0)反对(0)
+   #6楼 2010-06-30 15:30 uniker  
+博主，您好
+我在VS2003下，若运行时库采用MDd就会出现类似3楼的问题
+若采用单线程方式就可以顺利通过编译，但是程序和普通的控制台程序一样，就是说TEST框架未体现出来？请指点
+支持(0)反对(0)
+   #7楼[楼主] 2010-06-30 15:35 CoderZh  
+@ uniker
+gtest的测试案例工程本身就是一个控制台程序，框架的作用和所有xUnit系列的是一样的。框架提供了一些宏让你去写你的测试案例，并且帮助你管理，调度案例以及最终生成报告。
+支持(0)反对(0)
+   #8楼 2010-07-07 22:07 Zplutor  
+博主你好，我的gtest.lib以及单元测试程序都是使用/MTd进行编译的，为什么会出现以下错误呢?
+
+1>------ 已启动生成: 项目: UnitTest, 配置: Debug Win32 ------
+1>uafxcwd.lib(afxmem.obj) : error LNK2005: "void * __cdecl operator new(unsigned int)" (??2@YAPAXI@Z) 已经在 LIBCMTD.lib(new.obj) 中定义
+1>uafxcwd.lib(afxmem.obj) : error LNK2005: "void __cdecl operator delete(void *)" (??3@YAXPAX@Z) 已经在 LIBCMTD.lib(dbgdel.obj) 中定义
+1>uafxcwd.lib(afxmem.obj) : error LNK2005: "void * __cdecl operator new[](unsigned int)" (??_U@YAPAXI@Z) 已经在 LIBCMTD.lib(new2.obj) 中定义
+1>uafxcwd.lib(afxmem.obj) : error LNK2005: "void __cdecl operator delete[](void *)" (??_V@YAXPAX@Z) 已经在 LIBCMTD.lib(delete2.obj) 中定义
+支持(0)反对(0)
+   #9楼[楼主] 2010-07-10 19:36 CoderZh  
+@ Zplutor
+如果都是用/MTd编译的，理论上应该不会有问题。编译使用的VS版本也是一样的吗？
+支持(0)反对(0)
+   #10楼 2010-09-01 10:47 hzryzn  
+windows xp sp2 下，vc6+intel c++ 10.1.025 如何使用gtest？
+支持(0)反对(0)
+   #11楼 2011-03-12 16:43 no_sure  
+请问博主，2.设置gtest.lib路径 中我无法发现与你相同的路径，于是我的路径为C:\gtest-1.5.0\msvc\gtest\Debug\gtestd.lib
+error LNK2005: "public: __thiscall std::basic_stringstream<char,struct std::char_traits<char>,class std::allocator<char> >::basic_stringstream<char,struct std::char_traits<char>,class std::allocator<char> >(int)" (??0?$basic_stringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE@H@Z) 已经在 gtestd.lib(gtest.obj) 中定义
+哦，我没有都用/MTd编译的，已经解决了
+支持(0)反对(0)
+   #12楼 2011-09-01 15:25 b_y_qj  
+想请问一下，我在用vs2008运行测试之后，win32的窗口一闪而过就自动关闭了。怎样才能取消其自动关闭的功能呢？谢谢了。
+支持(0)反对(0)
+   #13楼[楼主] 2011-09-01 16:18 CoderZh  
+@ mimidouya
+主函数返回前加一句:
+getchar();
+支持(0)反对(0)
+   #14楼 2011-09-01 17:56 b_y_qj  
+感谢大牛的回复！！！
+楼主莫怪我无能啊，我使用了getchar();命令，win32窗口是保留了不过里面一片空白，然后在我按下回车键后，才打印该显示的东西，不过窗口还是瞬间关闭了。
+另外我还尝试使用过system("pause"); 效果与getchar();是一样的。
+3Q!!
+支持(0)反对(0)
+   #15楼[楼主] 2011-09-01 17:58 CoderZh  
+@ mimidouya
+也可以的。你要加到RUN_ALL_TESTS()后面。
+支持(0)反对(0)
+   #16楼 2011-10-31 17:48 Joey.Yu  
+请问您是否搞明白了 runtimelibrary的问题。
+我这里编译的结果很确定 就是 lib 用的mtd 但是 exe的用他就会 有库函数冲突的 错误，而且换 。
+难道这是后续版本才出现的问题？ 
+而且很奇怪的是两个工程若是运行时库一样则会出现 链接错误
+支持(0)反对(0)
+   #17楼 2012-07-05 20:06 michelleliu  
+你好，请问文章里面的3个函数我是写到一个cpp文件当中的：
+#include "stdafx.h"
+#include <gtest.h>
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+testing::InitGoogleTest(&argc, argv);
+return RUN_ALL_TESTS();
+
+return 0;
+}
+
+int Foo(int a, int b)
+{
+if (a == 0 || b == 0)
+{
+throw "don't do that";
+}
+int c = a % b;
+if (c == 0)
+return b;
+return Foo(b, c);
+}
+
+TEST(FooTest, HandleNoneZeroInput)
+{
+EXPECT_EQ(2, Foo(4, 10));
+EXPECT_EQ(6, Foo(30, 18));
+}
+
+这样好象不行，可以请教一下，这些函数具体是写到哪些文件当中的吗？
+支持(0)反对(0)
+   #18楼 2012-07-05 20:08 michelleliu  
+另外，我找不到gtest\lib\win32d\gtestd.lib这个目录，我直接映射的是msvc\debug\gtestd.lib这个目录，请问这样对不对呀？
+支持(0)反对(0)
+   #19楼 2012-09-21 18:48 sishao  
+请问支持vs2012吗？
+支持(0)反对(0)
+   #20楼 2012-09-21 19:31 sishao  
+是支持的，但是要修改一个参数才能build通过
+c:\program files (x86)\Microsoft Visual Studio 11.0\VC\include\xstddef，把 _VARIADIC_MAX定义成10
+
+参考：
+http://stackoverflow.com/questions/9589192/how-do-i-change-the-number-of-template-arguments-supported-by-msvcs-stdtupl
+支持(0)反对(0)
+   #21楼 2012-12-10 10:56 岁月漫步  
+按照你说的做了，非常好用，谢谢
+支持(0)反对(0)
+   #22楼 2013-01-14 15:59 Lambiel  
+请问楼主， eclipse下怎样配置gtest呢，自己整了一下，没弄对。
+支持(0)反对(0)
+   #23楼 2013-09-07 03:48 singmelody  
+非常好
+支持(0)反对(0)
+   #24楼 2014-02-23 23:16 to be crazy  
+@ michelleliu
+改成这样
+// demo.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "iostream"
+#include <gtest/gtest.h>
+using namespace std;
+
+int Foo(int a, int b)
+{
+if (a == 0 || b == 0)
+{
+throw "don't do that";
+}
+int c = a % b;
+if (c == 0)
+return b;
+return Foo(b, c);
+}
+
+TEST(FooTest, HandleNoneZeroInput)
+
+{
+
+EXPECT_EQ(2, Foo(4, 10));
+
+EXPECT_EQ(6, Foo(30, 18));
+
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+testing::InitGoogleTest(&argc, argv);
+RUN_ALL_TESTS();
+getchar();
+
+return 0;
+}
+支持(0)反对(0)
+   #25楼 2014-04-10 15:20 coding for fun  
+设置测试工程的属性（/MT参数（和编译gtest时使用一样的参数就行了）），很重要
+支持(0)反对(0)
+   #26楼 2015-04-26 12:03 xunathan  
+这个正好用到 学习一下
+支持(0)反对(0)
+   #27楼 2016-01-07 16:29 xiao_1bai  
+在编译成功后，执行时总是出现 无法启动程序E:\Cprogram\gtest-1.3.0\msvc\Debug\gtest.lib，系统找不到指定的文件。我这里生成的是gtestd.lib，并按照您的方法配置，但是总是出现这样的提示。麻烦您了，请指教。多谢。
+支持(1)反对(0)
+   #28楼 2016-07-12 21:28 夕阳下的小树林  
+使用vs2013编译通过，但是运行显示“无法启动程序。\msvc\gtest\debug\gtest.lib”。系统找不到指定文件。麻烦您了
+支持(0)反对(0)
+刷新评论刷新页面返回顶部
+注册用户登录后才能发表评论，请 登录 或 注册，访问网站首页。
+最新IT新闻:
+· 建行冻结乐视网及贾跃亭共2.5亿元财产：法院已批准执行
+· 小米移动电源为何这么便宜？低毛利让我感觉很踏实
+· 菜鸟裹裹在上海南京全面启用绿色包裹：无胶带可降解
+· 东芝资不抵债 已被降级至东交所二板市场
+· 谷歌内部的“共享单车”也很尴尬 经常被人扔河里
+? 更多新闻...
+最新知识库文章:
+· 为什么你该开始学习编程了？
+· 小printf的故事：什么是真正的程序员？
+· 程序员的工作、学习与绩效
+· 软件开发为什么很难
+· 唱吧DevOps的落地，微服务CI/CD的范本技术解读
+? 更多知识库文章...
+公告
+DigitalOcean优惠码
+这里的博客将不再更新，最新博客请移步至：
+我的独立博客：
+http://blog.coderzh.com/
+
+微信公众号：
+hacker-thinking
+昵称：CoderZh
+园龄：10年11个月
+粉丝：777
+关注：10
++加关注
+搜索
+
+ 找找看
+随笔分类
+Agile(2)
+Android(3)
+ASP.NET(3)
+C#(20)
+C/C++(24)
+Cocos2d-x(1)
+Emacs(2)
+Google App Engine(7)
+JAVA(3)
+Linux(1)
+Lua(2)
+Python(66)
+Ubuntu(9)
+VBS(4)
+安全性测试(9)
+测试生活感悟(7)
+程序人生(15)
+代码安全(3)
+单元测试(19)
+公告(13)
+每周总结(4)
+软件测试(30)
+设计模式
+性能测试(7)
+学习笔记(27)
+随笔档案
+2015年9月 (1)
+2015年8月 (2)
+2015年6月 (4)
+2015年5月 (2)
+2015年4月 (5)
+2015年3月 (1)
+2014年5月 (2)
+2014年4月 (2)
+2011年5月 (1)
+2011年3月 (1)
+2011年1月 (1)
+2010年12月 (3)
+2010年11月 (3)
+2010年10月 (2)
+2010年9月 (6)
+2010年8月 (2)
+2010年7月 (4)
+2010年6月 (3)
+2010年5月 (4)
+2010年4月 (9)
+2010年3月 (6)
+2010年2月 (3)
+2010年1月 (16)
+2009年12月 (6)
+2009年11月 (3)
+2009年10月 (4)
+2009年9月 (3)
+2009年8月 (2)
+2009年7月 (7)
+2009年6月 (2)
+2009年4月 (12)
+2009年3月 (5)
+2009年2月 (2)
+2009年1月 (3)
+2008年12月 (7)
+2008年11月 (9)
+2008年9月 (8)
+2008年8月 (7)
+2008年7月 (8)
+2008年6月 (9)
+2008年5月 (33)
+2008年4月 (6)
+2008年2月 (1)
+2007年12月 (3)
+2007年11月 (3)
+2007年10月 (7)
+2007年9月 (1)
+系列文章
+Python天天美味系列
+攻击方式学习系列
+瘦客户端那些事
+玩转gtest系列
+读书笔记
+Python网络编程
+xUnit Test Patterns
+卓有成效的程序员
+友情链接
+积分与排名
+积分 -	546828
+排名 -	193
+最新评论
+1. Re:玩转Google开源C++单元测试框架Google Test系列(gtest)之七 - 深入解析gtest
+谢谢，作者哥哥，这么多章，最精彩这章。领教了，谢谢
+--$JackChen
+2. Re:最常用的Emacs的基本操作
+如果Emacs入手都算有些难度。。。那VIM怎么办？
+--震灵
+3. Re:PyQt4学习资料汇总
+大神，我下了你的财务管理系统，那个数据库文件提示打不开，怎么解决啊~~急用~~
+--lzgst
+4. Re:ViEmuVS2013-3.2.1 破解
+为啥我的注册表中没有whole tomato
+--蓝域小兵
+5. Re:玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制
+由于没有加TEST 宏，输出结果如下：[==========] Running 0 tests from 0 test cases.[==========] 0 tests from 0 test c......
+--喜马拉雅
+6. Re:从CEGUI源码看代码规范
+好一个singleton！
+--chaosink
+7. Re:使用UI Automation库用于UI自动化测试
+mark
+--大恒爸爸
+8. Re:Facebook网络模拟测试工具ATC使用
+楼主，我执行sudo atcd --atcd-lan wlp4s0 报找不到atcd命令，wlp4s0是我的网卡名称，我跳过这步执行sudo python manage.py runserver 0.......
+--vbs_liuyoung
+9. Re:Facebook网络模拟测试工具ATC使用
+请问楼主,为什么执行 sudo atcd --atcd-lan wlan0  说是找不到atcd命令呢???按步骤,我并没有报错什么的
+--vbs_liuyoung
+10. Re:Facebook网络模拟测试工具ATC使用
+@可以了楼主，我在百度上找到解决方案了，在atcui/urls.py里面加上一个from django.conf.urls import include
+虽然我不太明白是何以。但是解决了错误
+--vbs_liuyoung
+阅读排行榜
+1. 玩转Google开源C++单元测试框架Google Test系列(gtest)(总)(217758)
+2. 玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest(143957)
+3. 玩转Google开源C++单元测试框架Google Test系列(gtest)之二 - 断言(102464)
+4. 玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制(67171)
+5. 玩转Google开源C++单元测试框架Google Test系列(gtest)之四 - 参数化(53431)
+6. 玩转Google开源C++单元测试框架Google Test系列(gtest)之六 - 运行参数(53303)
+7. C# 中使用JSON - DataContractJsonSerializer(50236)
+8. PyQt4学习资料汇总(49208)
+9. 玩转Google开源C++单元测试框架Google Test系列(gtest)之七 - 深入解析gtest(48238)
+10. 代码覆盖率浅谈(45919)
+评论排行榜
+1. PyQt4学习资料汇总(152)
+2. 开源Granados介绍 - SSH连接远程Linux服务器(C#)(66)
+3. (原创)攻击方式学习之(1) - 跨站式脚本(Cross-Site Scripting) (49)
+4. 三年之痒(44)
+5. NancyBlog - 我的Google App Engine Blog(42)
+6. 创业三年来的一些感想 - 游戏篇(40)
+7. CCNET+MSBuild+SVN实时构建的优化总结(40)
+8. CoderZh首款Python联机对战游戏 - NancyTetris1.0倾情发布（一）(37)
+9. 代码安全系列(1) - Log的注入(35)
+10. 程序员的信仰(35)
+推荐排行榜
+1. 玩转Google开源C++单元测试框架Google Test系列(gtest)(总)(23)
+2. 创业三年来的一些感想 - 游戏篇(14)
+3. 程序员的共鸣 - 读《卓有成效的程序员》(12)
+4. 代码覆盖率浅谈(12)
+5. 《xUnit Test Patterns》学习笔记5 - xUnit基础(10)
+6. 三年之痒(9)
+7. 玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest(9)
+8. 优美的测试代码 - 行为驱动开发(BDD)(8)
+9. Python天天美味(总)(7)
+10. PyQt4学习资料汇总(6)
+站长统计
+

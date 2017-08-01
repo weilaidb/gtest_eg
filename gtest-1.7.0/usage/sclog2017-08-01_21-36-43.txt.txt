@@ -1,0 +1,391 @@
+CoderZh的技术博客
+一个程序员的思考与总结(请移步至：http://blog.coderzh.com/)
+博客园
+首页
+联系
+订阅
+管理
+随笔-234  文章-10  评论-2044 
+玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制
+
+一、前言
+
+gtest提供了多种事件机制，非常方便我们在案例之前或之后做一些操作。总结一下gtest的事件一共有3种：
+
+1. 全局的，所有案例执行前后。
+2. TestSuite级别的，在某一批案例中第一个案例前，最后一个案例执行后。
+
+3. TestCase级别的，每个TestCase前后。
+二、全局事件
+
+要实现全局事件，必须写一个类，继承testing::Environment类，实现里面的SetUp和TearDown方法。
+
+1. SetUp()方法在所有案例执行前执行
+
+2. TearDown()方法在所有案例执行后执行
+
+复制代码
+class FooEnvironment : public testing::Environment
+{
+public:
+    virtual void SetUp()
+    {
+        std::cout << "Foo FooEnvironment SetUP" << std::endl;
+    }
+    virtual void TearDown()
+    {
+        std::cout << "Foo FooEnvironment TearDown" << std::endl;
+    }
+};
+复制代码
+ 
+
+当然，这样还不够，我们还需要告诉gtest添加这个全局事件，我们需要在main函数中通过testing::AddGlobalTestEnvironment方法将事件挂进来，也就是说，我们可以写很多个这样的类，然后将他们的事件都挂上去。
+
+复制代码
+int _tmain(int argc, _TCHAR* argv[])
+{
+    testing::AddGlobalTestEnvironment(new FooEnvironment);
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+复制代码
+ 
+
+三、TestSuite事件
+我们需要写一个类，继承testing::Test，然后实现两个静态方法
+
+1. SetUpTestCase() 方法在第一个TestCase之前执行
+
+2. TearDownTestCase() 方法在最后一个TestCase之后执行
+
+复制代码
+class FooTest : public testing::Test {
+ protected:
+  static void SetUpTestCase() {
+    shared_resource_ = new ;
+  }
+  static void TearDownTestCase() {
+    delete shared_resource_;
+    shared_resource_ = NULL;
+  }
+  // Some expensive resource shared by all tests.
+  static T* shared_resource_;
+};
+复制代码
+在编写测试案例时，我们需要使用TEST_F这个宏，第一个参数必须是我们上面类的名字，代表一个TestSuite。
+
+复制代码
+TEST_F(FooTest, Test1)
+ {
+    // you can refer to shared_resource here 
+}
+TEST_F(FooTest, Test2)
+ {
+    // you can refer to shared_resource here 
+}
+复制代码
+四、TestCase事件 
+TestCase事件是挂在每个案例执行前后的，实现方式和上面的几乎一样，不过需要实现的是SetUp方法和TearDown方法：
+
+1. SetUp()方法在每个TestCase之前执行
+2. TearDown()方法在每个TestCase之后执行
+
+复制代码
+class FooCalcTest:public testing::Test
+{
+protected:
+    virtual void SetUp()
+    {
+        m_foo.Init();
+    }
+    virtual void TearDown()
+    {
+        m_foo.Finalize();
+    }
+
+    FooCalc m_foo;
+};
+
+TEST_F(FooCalcTest, HandleNoneZeroInput)
+{
+    EXPECT_EQ(4, m_foo.Calc(12, 16));
+}
+
+TEST_F(FooCalcTest, HandleNoneZeroInput_Error)
+{
+    EXPECT_EQ(5, m_foo.Calc(12, 16));
+}
+复制代码
+ 
+
+五、总结
+
+gtest提供的这三种事件机制还是非常的简单和灵活的。同时，通过继承Test类，使用TEST_F宏，我们可以在案例之间共享一些通用方法，共享资源。使得我们的案例更加的简洁，清晰。
+
+系列链接：
+
+1.玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest
+2.玩转Google开源C++单元测试框架Google Test系列(gtest)之二 - 断言
+3.玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制
+
+4.玩转Google开源C++单元测试框架Google Test系列(gtest)之四 - 参数化
+
+5.玩转Google开源C++单元测试框架Google Test系列(gtest)之五 - 死亡测试 
+6.玩转Google开源C++单元测试框架Google Test系列(gtest)之六 - 运行参数
+
+7.玩转Google开源C++单元测试框架Google Test系列(gtest)之七 - 深入解析gtest
+8.玩转Google开源C++单元测试框架Google Test系列(gtest)之八 - 打造自己的单元测试框架
+ 
+
+
+DigitalOcean的VPS主机，稳定、速度快、价格也实惠。可以在上面部署独立网站或各种实用工具。
+我用了很久了，确实不错，极力推荐。
+使用这个链接购买可获得10美元优惠。
+
+优惠链接： DigitalOcean优惠码 
+
+
+微信扫一扫交流
+作者：CoderZh 
+公众号：hacker-thinking （一个程序员的思考） 
+独立博客：http://blog.coderzh.com 
+博客园博客将不再更新，请关注我的「微信公众号」或「独立博客」。 
+作为一个程序员，思考程序的每一行代码，思考生活的每一个细节，思考人生的每一种可能。 
+文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。
+分类: 单元测试,C/C++
+标签: Google Test
+好文要顶 关注我 收藏该文    
+CoderZh
+关注 - 10
+粉丝 - 777
++加关注
+2 0
+? 上一篇：玩转Google开源C++单元测试框架Google Test系列(gtest)之二 - 断言
+? 下一篇：玩转Google开源C++单元测试框架Google Test系列(gtest)之四 - 参数化
+posted @ 2009-04-06 19:02 CoderZh 阅读(67172) 评论(5) 编辑 收藏
+评论列表
+   #1楼 2009-09-09 10:10 theday
+你好，事件机制可以共享资源，可以共享怎样的资源，能够举例说明一下，从测试的角度来讲，有什么实用价值？
+   #2楼[楼主] 2009-09-09 10:25 CoderZh  
+@ theday
+哦，我说的共享资源和事件机制没有什么关系。我说的共享是指同一个TestFixture里的静态变量，函数等的同享。
+支持(0)反对(0)
+   #3楼 2009-11-09 11:58 我爱一条蚕  
+@ CoderZh
+我的理解，就是说我们自己通过继承测试框架的类后再实现一些我们实际中需要的测试类，然后再为这些类添加一些静态成员或者静态方法，这样使得我们的用例中这些成员可以共享，是这样么？
+支持(0)反对(0)
+   #4楼 2015-12-08 23:27 iSunshine  
+你好~我编译的时候出现以下的问题。
+error C2061: syntax error : identifier 'FooEnvironment'
+这应该怎么解决？求帮忙
+支持(0)反对(0)
+   #5楼 2017-03-09 16:52 喜马拉雅  
+由于没有加TEST 宏，输出结果如下：
+[==========] Running 0 tests from 0 test cases.
+[==========] 0 tests from 0 test cases ran. (2 ms total)
+[ PASSED ] 0 tests.
+请按任意键继续. . .
+加入TEST 宏
+TEST(firstTest, FooEnvironment) { } 
+输出：
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+Foo FooEnvironment SetUP
+[----------] 1 test from firstTest
+[ RUN ] firstTest.FooEnvironment
+[ OK ] firstTest.FooEnvironment (0 ms)
+[----------] 1 test from firstTest (2 ms total)
+
+[----------] Global test environment tear-down
+Foo FooEnvironment TearDown
+[==========] 1 test from 1 test case ran. (19 ms total)
+[ PASSED ] 1 test.
+请按任意键继续. . .
+支持(0)反对(0)
+刷新评论刷新页面返回顶部
+注册用户登录后才能发表评论，请 登录 或 注册，访问网站首页。
+最新IT新闻:
+· 腾讯战队黑客“世界杯”进军三甲，互联网安全人才培养闭环成效显著
+· 建行冻结乐视网及贾跃亭共2.5亿元财产：法院已批准执行
+· 小米移动电源为何这么便宜？低毛利让我感觉很踏实
+· 菜鸟裹裹在上海南京全面启用绿色包裹：无胶带可降解
+· 东芝资不抵债 已被降级至东交所二板市场
+? 更多新闻...
+最新知识库文章:
+· 为什么你该开始学习编程了？
+· 小printf的故事：什么是真正的程序员？
+· 程序员的工作、学习与绩效
+· 软件开发为什么很难
+· 唱吧DevOps的落地，微服务CI/CD的范本技术解读
+? 更多知识库文章...
+公告
+DigitalOcean优惠码
+这里的博客将不再更新，最新博客请移步至：
+我的独立博客：
+http://blog.coderzh.com/
+
+微信公众号：
+hacker-thinking
+昵称：CoderZh
+园龄：10年11个月
+粉丝：777
+关注：10
++加关注
+搜索
+
+ 找找看
+随笔分类
+Agile(2)
+Android(3)
+ASP.NET(3)
+C#(20)
+C/C++(24)
+Cocos2d-x(1)
+Emacs(2)
+Google App Engine(7)
+JAVA(3)
+Linux(1)
+Lua(2)
+Python(66)
+Ubuntu(9)
+VBS(4)
+安全性测试(9)
+测试生活感悟(7)
+程序人生(15)
+代码安全(3)
+单元测试(19)
+公告(13)
+每周总结(4)
+软件测试(30)
+设计模式
+性能测试(7)
+学习笔记(27)
+随笔档案
+2015年9月 (1)
+2015年8月 (2)
+2015年6月 (4)
+2015年5月 (2)
+2015年4月 (5)
+2015年3月 (1)
+2014年5月 (2)
+2014年4月 (2)
+2011年5月 (1)
+2011年3月 (1)
+2011年1月 (1)
+2010年12月 (3)
+2010年11月 (3)
+2010年10月 (2)
+2010年9月 (6)
+2010年8月 (2)
+2010年7月 (4)
+2010年6月 (3)
+2010年5月 (4)
+2010年4月 (9)
+2010年3月 (6)
+2010年2月 (3)
+2010年1月 (16)
+2009年12月 (6)
+2009年11月 (3)
+2009年10月 (4)
+2009年9月 (3)
+2009年8月 (2)
+2009年7月 (7)
+2009年6月 (2)
+2009年4月 (12)
+2009年3月 (5)
+2009年2月 (2)
+2009年1月 (3)
+2008年12月 (7)
+2008年11月 (9)
+2008年9月 (8)
+2008年8月 (7)
+2008年7月 (8)
+2008年6月 (9)
+2008年5月 (33)
+2008年4月 (6)
+2008年2月 (1)
+2007年12月 (3)
+2007年11月 (3)
+2007年10月 (7)
+2007年9月 (1)
+系列文章
+Python天天美味系列
+攻击方式学习系列
+瘦客户端那些事
+玩转gtest系列
+读书笔记
+Python网络编程
+xUnit Test Patterns
+卓有成效的程序员
+友情链接
+积分与排名
+积分 -	546828
+排名 -	193
+最新评论
+1. Re:玩转Google开源C++单元测试框架Google Test系列(gtest)之七 - 深入解析gtest
+谢谢，作者哥哥，这么多章，最精彩这章。领教了，谢谢
+--$JackChen
+2. Re:最常用的Emacs的基本操作
+如果Emacs入手都算有些难度。。。那VIM怎么办？
+--震灵
+3. Re:PyQt4学习资料汇总
+大神，我下了你的财务管理系统，那个数据库文件提示打不开，怎么解决啊~~急用~~
+--lzgst
+4. Re:ViEmuVS2013-3.2.1 破解
+为啥我的注册表中没有whole tomato
+--蓝域小兵
+5. Re:玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制
+由于没有加TEST 宏，输出结果如下：[==========] Running 0 tests from 0 test cases.[==========] 0 tests from 0 test c......
+--喜马拉雅
+6. Re:从CEGUI源码看代码规范
+好一个singleton！
+--chaosink
+7. Re:使用UI Automation库用于UI自动化测试
+mark
+--大恒爸爸
+8. Re:Facebook网络模拟测试工具ATC使用
+楼主，我执行sudo atcd --atcd-lan wlp4s0 报找不到atcd命令，wlp4s0是我的网卡名称，我跳过这步执行sudo python manage.py runserver 0.......
+--vbs_liuyoung
+9. Re:Facebook网络模拟测试工具ATC使用
+请问楼主,为什么执行 sudo atcd --atcd-lan wlan0  说是找不到atcd命令呢???按步骤,我并没有报错什么的
+--vbs_liuyoung
+10. Re:Facebook网络模拟测试工具ATC使用
+@可以了楼主，我在百度上找到解决方案了，在atcui/urls.py里面加上一个from django.conf.urls import include
+虽然我不太明白是何以。但是解决了错误
+--vbs_liuyoung
+阅读排行榜
+1. 玩转Google开源C++单元测试框架Google Test系列(gtest)(总)(217758)
+2. 玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest(143958)
+3. 玩转Google开源C++单元测试框架Google Test系列(gtest)之二 - 断言(102464)
+4. 玩转Google开源C++单元测试框架Google Test系列(gtest)之三 - 事件机制(67171)
+5. 玩转Google开源C++单元测试框架Google Test系列(gtest)之四 - 参数化(53431)
+6. 玩转Google开源C++单元测试框架Google Test系列(gtest)之六 - 运行参数(53303)
+7. C# 中使用JSON - DataContractJsonSerializer(50237)
+8. PyQt4学习资料汇总(49209)
+9. 玩转Google开源C++单元测试框架Google Test系列(gtest)之七 - 深入解析gtest(48238)
+10. 代码覆盖率浅谈(45919)
+评论排行榜
+1. PyQt4学习资料汇总(152)
+2. 开源Granados介绍 - SSH连接远程Linux服务器(C#)(66)
+3. (原创)攻击方式学习之(1) - 跨站式脚本(Cross-Site Scripting) (49)
+4. 三年之痒(44)
+5. NancyBlog - 我的Google App Engine Blog(42)
+6. 创业三年来的一些感想 - 游戏篇(40)
+7. CCNET+MSBuild+SVN实时构建的优化总结(40)
+8. CoderZh首款Python联机对战游戏 - NancyTetris1.0倾情发布（一）(37)
+9. 代码安全系列(1) - Log的注入(35)
+10. 程序员的信仰(35)
+推荐排行榜
+1. 玩转Google开源C++单元测试框架Google Test系列(gtest)(总)(23)
+2. 创业三年来的一些感想 - 游戏篇(14)
+3. 程序员的共鸣 - 读《卓有成效的程序员》(12)
+4. 代码覆盖率浅谈(12)
+5. 《xUnit Test Patterns》学习笔记5 - xUnit基础(10)
+6. 三年之痒(9)
+7. 玩转Google开源C++单元测试框架Google Test系列(gtest)之一 - 初识gtest(9)
+8. 优美的测试代码 - 行为驱动开发(BDD)(8)
+9. Python天天美味(总)(7)
+10. PyQt4学习资料汇总(6)
+站长统计
+
